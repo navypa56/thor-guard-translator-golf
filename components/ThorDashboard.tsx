@@ -214,7 +214,7 @@ export function ThorDashboard() {
           <p className="status-eyebrow"><span className="status-icon">{view.tone === "red" ? "!" : view.tone === "green" ? "✓" : view.tone === "yellow" ? "!" : "—"}</span>{view.eyebrow}</p>
           <h2>{view.headline}</h2>
           {trainingMode && <div className="training-banner"><strong>TRAINING MODE</strong> Simulated readings—not current conditions.</div>}
-          {!trainingMode && data && (loading || failed) && <div className="stored-banner"><strong>LAST SYNC: {lastSyncAge.toUpperCase()}</strong> Keeping this verified status visible while the next update is pending.</div>}
+          {!trainingMode && data && <div className={`stored-banner ${loading || failed ? "" : "stored-banner-hidden"}`} aria-hidden={!loading && !failed}><strong>LAST SYNC: {lastSyncAge.toUpperCase()}</strong> Keeping this verified status visible while the next update is pending.</div>}
           <p className="status-summary">{view.summary}</p>
           <div className="status-meta">
             <span>{displayData?.location ?? "Selected course"}</span>
