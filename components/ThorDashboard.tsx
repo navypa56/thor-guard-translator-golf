@@ -307,6 +307,13 @@ export function ThorDashboard() {
         <footer>
           <p><strong>Safety notice</strong> This application is an informational translator, not an independent lightning-warning system. If this app conflicts with the selected course’s official Thor Guard status, the official status wins.</p>
           <p>This tool simplifies publicly available Thor Guard information. Always follow the official Thor Guard alert, golf course instructions, and local lightning safety procedures.</p>
+          <a
+            className="author-email-button"
+            href="mailto:savelaven@gmail.com?subject=Thor%20Guard%20Translator%20%E2%80%94%20bug%20or%20enhancement&body=Please%20choose%20one%3A%20Bug%20%2F%20Enhancement%0D%0A%0D%0AWhat%20happened%20or%20what%20would%20you%20like%20changed%3F%0D%0A%0D%0A%0D%0AWhich%20course%20were%20you%20viewing%3F%0D%0A%0D%0A%0D%0AAnything%20else%20that%20would%20help%3F%0D%0A"
+          >
+            Email the author <span aria-hidden="true">↗</span>
+          </a>
+          <p className="author-email-note">Report a bug or suggest an enhancement.</p>
         </footer>
       </div>
     </main>
