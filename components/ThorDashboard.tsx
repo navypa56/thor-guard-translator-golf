@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_THOR_PAGE_URL, READING_DEFINITIONS, THOR_URLS, type ReadingKey } from "@/lib/thorDefinitions";
 import { interpretThor, unavailableInterpretation } from "@/lib/interpretThor";
 import type { ThorData } from "@/lib/thorParser";
@@ -8,6 +8,7 @@ import { ThorRadarMap } from "@/components/ThorRadarMap";
 import { waitingEstimate, type WeatherOutlook } from "@/lib/weatherOutlook";
 
 const readingKeys: ReadingKey[] = ["lhl", "di", "ad", "fcc"];
+const REFRESH_SECONDS = 5;
 
 const insights: Array<{
   key: ReadingKey;
@@ -38,9 +39,11 @@ export function ThorDashboard() {
   const [sourceUrl, setSourceUrl] = useState<string>(DEFAULT_THOR_PAGE_URL);
   const [draftUrl, setDraftUrl] = useState<string>(DEFAULT_THOR_PAGE_URL);
   const [sourceReady, setSourceReady] = useState(false);
-  const [secondsToRefresh, setSecondsToRefresh] = useState(10);
-  const [nextRefreshAt, setNextRefreshAt] = useState(() => Date.now() + 10_000);
+  const [secondsToRefresh, setSecondsToRefresh] = useState(REFRESH_SECONDS);
+  const [nextRefreshAt, setNextRefreshAt] = useState(() => Date.now() + REFRESH_SECONDS * 1000);
   const [outlook, setOutlook] = useState<WeatherOutlook | null>(null);
+  const [trainingMode, setTrainingMode] = useState(false);
+  const refreshInProgress = useRef(false);
 
   useEffect(() => {
     const initialize = window.setTimeout(() => {
@@ -53,10 +56,13 @@ export function ThorDashboard() {
   }, []);
 
   const refresh = useCallback(async () => {
-    if (!sourceReady) return;
+    if (!sourceReady || refreshInProgress.current) return;
+    refreshInProgress.current = true;
     setLoading(true);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 4_500);
     try {
-      const response = await fetch(`/api/thor?source=${encodeURIComponent(sourceUrl)}`, { cache: "no-store" });
+      const response = await fetch(`/api/thor?source=${encodeURIComponent(sourceUrl)}`, { cache: "no-store", signal: controller.signal });
       if (!response.ok) {
         const body = await response.json().catch(() => null);
         throw new Error(body?.error ?? "Live data unavailable");
@@ -65,19 +71,20 @@ export function ThorDashboard() {
       setFailed(false);
       setErrorMessage("");
     } catch (error) {
-      setData(null);
       setFailed(true);
-      setErrorMessage(error instanceof Error ? error.message : "Live data unavailable");
+      setErrorMessage(error instanceof Error && error.name !== "AbortError" ? error.message : "The live source did not answer in time.");
     } finally {
-      setNextRefreshAt(Date.now() + 10_000);
+      window.clearTimeout(timeout);
+      setNextRefreshAt(Date.now() + REFRESH_SECONDS * 1000);
       setLoading(false);
+      refreshInProgress.current = false;
     }
   }, [sourceReady, sourceUrl]);
 
   useEffect(() => {
     if (!sourceReady) return;
     const initial = window.setTimeout(refresh, 0);
-    const timer = window.setInterval(refresh, 10_000);
+    const timer = window.setInterval(refresh, REFRESH_SECONDS * 1000);
     return () => {
       window.clearTimeout(initial);
       window.clearInterval(timer);
@@ -117,7 +124,25 @@ export function ThorDashboard() {
     setSourceUrl(DEFAULT_THOR_PAGE_URL);
   }
 
-  const view = data ? interpretThor(data) : unavailableInterpretation();
+  const trainingData: ThorData = {
+    location: "TRAINING — Prescott Lakes",
+    status: "RedAlert",
+    officialStatus: "RedAlert",
+    lhl: 3,
+    di: 1.6,
+    ad: 2,
+    fcc: 1,
+    sourceUpdatedAt: "Simulated Red Alert scenario",
+    retrievedAt: new Date().toISOString(),
+    isDataOld: false,
+    emergencyState: "None",
+    testResult: "Pass",
+    sourcePageUrl: sourceUrl,
+    latitude: data?.latitude ?? 34.583,
+    longitude: data?.longitude ?? -112.4,
+  };
+  const displayData = trainingMode ? trainingData : data;
+  const view = displayData ? interpretThor(displayData) : unavailableInterpretation();
   const waiting30 = waitingEstimate(outlook?.precipitationChance30 ?? null, outlook?.thunderstormIn3Hours ?? false);
   const waiting60 = waitingEstimate(outlook?.precipitationChance60 ?? null, outlook?.thunderstormIn3Hours ?? false);
 
@@ -130,8 +155,11 @@ export function ThorDashboard() {
             <p className="kicker">LIVE COURSE CONDITIONS</p>
             <h1>Thor Guard Translator</h1>
           </div>
-          <div className={`live-pill ${failed ? "offline" : ""}`}>
-            <span className="live-dot" />{loading ? "CHECKING" : failed ? "UNAVAILABLE" : "LIVE"}
+          <button className={`training-toggle ${trainingMode ? "active" : ""}`} type="button" onClick={() => setTrainingMode((enabled) => !enabled)} aria-pressed={trainingMode}>
+            {trainingMode ? "Exit training" : "Training mode"}
+          </button>
+          <div className={`live-pill ${failed && !data ? "offline" : ""}`}>
+            <span className="live-dot" />{trainingMode ? "SIMULATION" : loading && data ? "UPDATING" : loading ? "CONNECTING" : failed && data ? "LAST UPDATE" : failed ? "UNAVAILABLE" : "LIVE"}
           </div>
         </header>
 
@@ -152,21 +180,22 @@ export function ThorDashboard() {
           <div className="status-glow" />
           <p className="status-eyebrow"><span className="status-icon">{view.tone === "red" ? "!" : view.tone === "green" ? "✓" : view.tone === "yellow" ? "!" : "—"}</span>{view.eyebrow}</p>
           <h2>{view.headline}</h2>
-          <p className="status-summary">{loading ? "Checking the selected course’s official Thor Guard source…" : view.summary}</p>
+          {trainingMode && <div className="training-banner"><strong>TRAINING MODE</strong> Simulated readings—not current conditions.</div>}
+          <p className="status-summary">{view.summary}</p>
           <div className="status-meta">
-            <span>{data?.location ?? "Selected course"}</span>
-            <span>Official status: <strong>{data?.officialStatus ?? "Not verified"}</strong></span>
+            <span>{displayData?.location ?? "Selected course"}</span>
+            <span>{trainingMode ? "Simulated" : "Official"} status: <strong>{displayData?.officialStatus ?? "Not verified"}</strong></span>
           </div>
         </section>
 
-        {failed && (
-          <div className="source-error"><p>{errorMessage}</p><ExternalLink href={sourceUrl} className="official-button">Open Selected Thor Guard Page</ExternalLink></div>
+        {failed && !trainingMode && (
+          <div className={`source-error ${data ? "retained-data" : ""}`}><p>{errorMessage} {data ? "The last successful update remains on screen; trying again in 5 seconds." : "Trying again in 5 seconds."}</p><ExternalLink href={sourceUrl} className="official-button">Open Selected Thor Guard Page</ExternalLink></div>
         )}
 
         <section className={`section-block alert-surface alert-${view.tone}`}>
           <div className="section-heading">
             <div><p className="section-number">01 / LIVE TRANSLATION</p><h2>What’s happening right now</h2></div>
-            <div className="refresh-cluster"><span>Refresh in {secondsToRefresh}s</span><button className="refresh-button" onClick={refresh} disabled={loading} aria-label="Refresh live data">↻</button></div>
+            <div className="refresh-cluster"><span>{loading ? "Updating—last result stays visible" : `Updates in ${secondsToRefresh}s`}</span><button className="refresh-button" onClick={refresh} disabled={loading} aria-label="Refresh live data">↻</button></div>
           </div>
           <div className="insight-grid">
             {insights.map((insight) => (
@@ -175,9 +204,10 @@ export function ThorDashboard() {
                 <div className="insight-copy">
                   <div className="insight-title-row">
                     <h3>{insight.title}</h3>
-                    <span className="reading-chip"><b>{READING_DEFINITIONS[insight.key].label}</b> {data?.[insight.key] ?? "—"}</span>
+                    <span className="reading-chip"><b>{READING_DEFINITIONS[insight.key].label}</b> {displayData?.[insight.key] ?? "—"}</span>
                   </div>
                   <p>{insight.explanation(view)}</p>
+                  <p className="plain-reading"><strong>What this number means:</strong> {READING_DEFINITIONS[insight.key].plainEnglish}</p>
                 </div>
               </article>
             ))}
@@ -190,7 +220,8 @@ export function ThorDashboard() {
             {readingKeys.map((key) => (
               <div className="reading" key={key}>
                 <div className="reading-label">{READING_DEFINITIONS[key].label}<span className={`info info-${key}`} tabIndex={0} role="note" aria-label={READING_DEFINITIONS[key].explanation}>i<span className="tooltip">{READING_DEFINITIONS[key].explanation}</span></span></div>
-                <div className="reading-value">{data?.[key] ?? "—"}</div>
+                <div className="reading-value">{displayData?.[key] ?? "—"}</div>
+                <p className="reading-help">{READING_DEFINITIONS[key].plainEnglish}</p>
               </div>
             ))}
           </div>
@@ -208,10 +239,10 @@ export function ThorDashboard() {
           </section>
         )}
 
-        {data?.latitude !== null && data?.longitude !== null && data?.latitude !== undefined && data?.longitude !== undefined && (
+        {displayData?.latitude !== null && displayData?.longitude !== null && displayData?.latitude !== undefined && displayData?.longitude !== undefined && (
           <section className="map-card">
             <div className="map-heading"><div><p className="section-number">LIVE RADAR</p><h2>Course map</h2></div><ExternalLink href={data.sourcePageUrl ?? sourceUrl}>Open official Thor map</ExternalLink></div>
-            <ThorRadarMap latitude={data.latitude} longitude={data.longitude} />
+            <ThorRadarMap latitude={displayData.latitude} longitude={displayData.longitude} />
             <div className="radar-legend" aria-label="Weather radar color guide">
               <div className="legend-title"><strong>Radar color guide</strong><span>Rain intensity</span></div>
               <div className="legend-scale" aria-hidden="true" />
@@ -222,8 +253,8 @@ export function ThorDashboard() {
         )}
 
         <div className="update-row">
-          <span><span className="pulse" />Last successful update: <strong>{formatTime(data?.retrievedAt)}</strong></span>
-          <span>Source reading: <strong>{data?.sourceUpdatedAt ?? "Not available"}</strong></span>
+          <span><span className="pulse" />{trainingMode ? "Training scenario" : "Last successful update"}: <strong>{trainingMode ? "Simulated" : formatTime(data?.retrievedAt)}</strong></span>
+          <span>Source reading: <strong>{trainingMode ? "Simulated—not live" : data?.sourceUpdatedAt ?? "Not available"}</strong></span>
         </div>
 
         <details className="about-card">

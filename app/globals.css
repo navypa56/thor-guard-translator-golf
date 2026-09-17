@@ -12,6 +12,9 @@ main { min-height:100vh; background:radial-gradient(circle at 70% -10%,rgba(200,
 .kicker,.section-number,.status-eyebrow { margin:0; font-size:10px; font-weight:750; letter-spacing:.15em; text-transform:uppercase; }
 h1 { margin:2px 0 0; font-size:16px; letter-spacing:-.02em; }
 .live-pill { margin-left:auto; border:1px solid #b8c2bb; border-radius:999px; padding:7px 10px; font-size:9px; font-weight:750; letter-spacing:.12em; }
+.training-toggle { margin-left:auto; border:1px solid var(--line); border-radius:999px; padding:7px 11px; background:var(--surface); color:var(--ink); font-size:11px; font-weight:700; cursor:pointer; }
+.training-toggle.active { border-color:#ff9ba0; background:#a90f18; color:white; }
+.training-toggle + .live-pill { margin-left:0; }
 .live-dot,.pulse { display:inline-block; width:6px; height:6px; border-radius:50%; background:#4bbb57; margin-right:6px; box-shadow:0 0 0 3px rgba(75,187,87,.13); }
 .offline .live-dot { background:#929a95; box-shadow:none; }
 .course-picker { margin:0 0 16px; border:1px solid var(--line); border-radius:16px; background:var(--surface); }
@@ -36,6 +39,7 @@ h1 { margin:2px 0 0; font-size:16px; letter-spacing:-.02em; }
 .status-icon { display:grid; place-items:center; width:22px; height:22px; border:1px solid currentColor; border-radius:50%; font-size:12px; }
 .status-card h2 { position:relative; margin:auto 0 6px; max-width:650px; font-size:clamp(44px,10vw,76px); line-height:.88; letter-spacing:-.07em; }
 .status-summary { position:relative; max-width:600px; margin:8px 0 18px; font-size:16px; line-height:1.42; opacity:.9; }
+.training-banner { position:relative; align-self:flex-start; margin-top:16px; padding:7px 10px; border:1px solid currentColor; border-radius:9px; font-size:12px; }
 .status-meta { position:relative; display:flex; justify-content:space-between; gap:12px; border-top:1px solid rgba(255,255,255,.22); padding-top:18px; font-size:11px; opacity:.82; }
 .official-button { display:block; margin-top:12px; padding:15px; border-radius:14px; background:var(--ink); color:var(--surface); text-align:center; text-decoration:none; font-weight:700; }
 .section-block { padding:28px 3px 16px; }
@@ -53,6 +57,7 @@ h1 { margin:2px 0 0; font-size:16px; letter-spacing:-.02em; }
 .insight-title-row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
 .insight-grid h3 { margin:1px 0 7px; font-size:12px; line-height:1.3; text-transform:uppercase; letter-spacing:.04em; }
 .insight-grid p { margin:0; color:var(--muted); font-size:14px; line-height:1.42; }
+.insight-grid .plain-reading { margin-top:9px; padding-top:9px; border-top:1px solid var(--line); color:var(--ink); font-size:13px; }
 .reading-chip { flex:none; padding:4px 7px; border:1px solid var(--line); border-radius:999px; font:12px/1.1 var(--font-geist-mono); white-space:nowrap; }
 .reading-chip b { font-family:var(--font-geist); font-size:10px; letter-spacing:.05em; }
 .readings-card,.about-card { border:1px solid var(--line); border-radius:20px; background:var(--surface); }
@@ -68,6 +73,7 @@ details summary::-webkit-details-marker { display:none; }
 .reading:last-child { border:0; }
 .reading-label { color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.1em; }
 .reading-value { margin-top:7px; font-family:var(--font-geist-mono),monospace; font-size:25px; }
+.reading-help { margin:8px 0 0; color:var(--muted); font-size:12px; line-height:1.35; }
 .info { position:relative; display:inline-grid; place-items:center; margin-left:5px; width:15px; height:15px; border:1px solid var(--muted); border-radius:50%; font-size:9px; cursor:help; }
 .tooltip { display:none; position:absolute; z-index:20; width:min(240px,calc(100vw - 36px)); bottom:24px; left:50%; transform:translateX(-50%); padding:11px 12px; border-radius:10px; color:white; background:#202622; box-shadow:0 10px 28px rgba(0,0,0,.25); font:13px/1.4 var(--font-geist); letter-spacing:0; text-align:left; }
 .info-fcc .tooltip { left:auto; right:-8px; transform:none; }
@@ -115,3 +121,4 @@ footer p { margin:7px auto; max-width:650px; }
 @media (prefers-reduced-motion:reduce) { .tone-green,.tone-yellow,.tone-red { animation:none; } }
 @media (max-width:540px) { .page-shell{padding:max(12px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}.masthead{margin-bottom:10px}.brand-mark{width:38px;height:38px}.live-pill{padding:6px 8px}.course-picker{margin-bottom:10px}.url-row{flex-direction:column}.url-row button{padding:12px}.status-card{min-height:270px;border-radius:20px;padding:20px}.status-card h2{font-size:clamp(42px,15vw,64px)}.status-meta{flex-direction:column;padding-top:13px}.section-block{padding-top:22px}.section-block.alert-yellow,.section-block.alert-red{padding:14px;margin-top:10px}.section-heading{align-items:center}.refresh-cluster{gap:6px}.insight-grid{grid-template-columns:1fr}.insight-grid article,.insight-grid article:nth-child(odd){min-height:0;padding:14px;border-right:0;border-bottom:1px solid var(--line)}.insight-grid article:last-child{border-bottom:0}.reading-grid{grid-template-columns:1fr 1fr}.reading:nth-child(2){border-right:0}.reading:nth-child(-n+2){border-bottom:1px solid var(--line)}.update-row{flex-direction:column}.tooltip{position:absolute;left:50%;right:auto;transform:translateX(-50%)}.info-lhl .tooltip{left:-8px;transform:none}.info-di .tooltip,.info-fcc .tooltip{left:auto;right:-8px;transform:none}.reading-value{font-size:22px}.waiting-card,.map-card{padding:14px}.waiting-heading,.map-heading{align-items:flex-start}.estimate-grid{grid-template-columns:1fr}.radar-map,.map-unavailable{height:250px} }
 @media (prefers-color-scheme:dark) { :root{--bg:#101513;--surface:#171e1a;--ink:#edf4ef;--muted:#a1aaa4;--line:#303933}.brand-mark{background:#edf4ef;color:#183020}.official-button{background:#edf4ef;color:#101513}.tone-yellow{color:#1d1800}.section-block.alert-yellow,.readings-card.alert-yellow,.waiting-card.alert-yellow{color:#1d1800;background:#4b3b05}.section-block.alert-red,.readings-card.alert-red,.waiting-card.alert-red{background:#3b1014}.section-block.alert-yellow .section-number,.waiting-card.alert-yellow .section-number{color:#332700}.section-block.alert-red .section-number,.waiting-card.alert-red .section-number{color:#d7a4a8} }
+@media (max-width:540px) { .masthead{flex-wrap:wrap}.training-toggle{margin-left:auto}.training-toggle + .live-pill{margin-left:50px}.refresh-cluster span{max-width:150px;white-space:normal;text-align:right}.reading{padding:14px 10px}.reading-help{font-size:11px} }

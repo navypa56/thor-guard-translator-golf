@@ -11,6 +11,7 @@ export type ReadingKey = "lhl" | "di" | "ad" | "fcc";
 
 export interface ReadingDefinition {
   label: string;
+  plainEnglish: string;
   explanation: string;
   verified: boolean;
   source: string;
@@ -22,24 +23,28 @@ export interface ReadingDefinition {
 export const READING_DEFINITIONS: Record<ReadingKey, ReadingDefinition> = {
   lhl: {
     label: "LHL",
+    plainEnglish: "Thor Guard’s local electrical-activity reading. Use it as context only—the number by itself does not mean safe or unsafe.",
     explanation: "A live Thor Guard reading. Its precise definition still needs verification in the current official documentation.",
     verified: false,
     source: THOR_URLS.documentation,
   },
   di: {
     label: "DI",
+    plainEnglish: "A changing-conditions reading used by Thor Guard. A single value cannot reliably tell you whether a storm is arriving or leaving.",
     explanation: "A live Thor Guard reading. Its precise definition still needs verification in the current official documentation.",
     verified: false,
     source: THOR_URLS.documentation,
   },
   ad: {
     label: "AD",
+    plainEnglish: "A system reading associated with changing electrical conditions. It is not an All Clear countdown; only the official status can give the All Clear.",
     explanation: "A live Thor Guard reading. Its precise definition still needs verification in the current official documentation.",
     verified: false,
     source: THOR_URLS.documentation,
   },
   fcc: {
     label: "FCC",
+    plainEnglish: "A reading associated with electrical-discharge activity. Do not treat it as a distance, timer, or permission to resume play.",
     explanation: "A live Thor Guard reading. Its precise definition still needs verification in the current official documentation.",
     verified: false,
     source: THOR_URLS.documentation,
