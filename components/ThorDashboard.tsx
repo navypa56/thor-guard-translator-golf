@@ -5,7 +5,7 @@ import { DEFAULT_THOR_PAGE_URL, READING_DEFINITIONS, THOR_URLS, type ReadingKey 
 import { interpretThor, unavailableInterpretation } from "@/lib/interpretThor";
 import type { ThorData } from "@/lib/thorParser";
 import { ThorRadarMap } from "@/components/ThorRadarMap";
-import { waitingEstimate, type WeatherOutlook } from "@/lib/weatherOutlook";
+import { playOutlook, waitingEstimate, type WeatherOutlook } from "@/lib/weatherOutlook";
 
 const readingKeys: ReadingKey[] = ["lhl", "di", "ad", "fcc"];
 const REFRESH_SECONDS = 5;
@@ -69,7 +69,7 @@ export function ThorDashboard() {
   const [nextRefreshAt, setNextRefreshAt] = useState(() => Date.now() + REFRESH_SECONDS * 1000);
   const [outlook, setOutlook] = useState<WeatherOutlook | null>(null);
   const [trainingMode, setTrainingMode] = useState(false);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(0);
   const refreshInProgress = useRef(false);
 
   useEffect(() => {
@@ -178,6 +178,7 @@ export function ThorDashboard() {
   const lastSyncAge = formatAge(data?.retrievedAt, now);
   const waiting30 = waitingEstimate(outlook?.precipitationChance30 ?? null, outlook?.thunderstormIn3Hours ?? false);
   const waiting60 = waitingEstimate(outlook?.precipitationChance60 ?? null, outlook?.thunderstormIn3Hours ?? false);
+  const playEstimate = playOutlook(outlook);
 
   return (
     <main>
@@ -262,6 +263,22 @@ export function ThorDashboard() {
           </div>
           <p className="verification-note">These definitions translate Thor Guard’s official Data Reference Guide and Interpretation Sheet. The official alert status always controls the safety decision.</p>
         </details>
+
+        {(view.tone === "green" || view.tone === "yellow") && (
+          <section className={`play-outlook-card play-${playEstimate.level.toLowerCase().replaceAll(" ", "-")}`}>
+            <div className="waiting-heading">
+              <div><p className="section-number">FREE WEATHER PREDICTION ENGINE</p><h2>How much golf may be left?</h2></div>
+              <span className="estimate-badge">PLANNING ESTIMATE</span>
+            </div>
+            <div className="play-outlook-result">
+              <span className="play-outlook-level">{playEstimate.level}</span>
+              <strong>{playEstimate.headline}</strong>
+              <p>{playEstimate.detail}</p>
+              <small>Confidence: <b>{playEstimate.confidence}</b> · Updated from the latest available 15-minute weather forecast</small>
+            </div>
+            <p className="waiting-note">This free, explainable prediction uses short-range weather-model data—not a paid AI service. It cannot predict lightning or guarantee uninterrupted play. Stop immediately whenever Thor Guard or course staff direct you to stop.</p>
+          </section>
+        )}
 
         {(view.tone === "red" || view.tone === "yellow") && (
           <section className={`waiting-card alert-${view.tone}`}>

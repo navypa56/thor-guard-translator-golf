@@ -43,7 +43,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       precipitationChance30: max(probabilities.slice(0, 2)),
       precipitationChance60: max(probabilities.slice(0, 4)),
+      precipitationChance2Hours: max(probabilities.slice(0, 8)),
       precipitationChance3Hours: max(probabilities.slice(0, 12)),
+      precipitationProbabilities: probabilities.slice(0, 12),
+      weatherCodes: codes.slice(0, 12),
       thunderstormIn3Hours: codes.slice(0, 12).some((code) => typeof code === "number" && code >= 95),
       provider: "Open-Meteo",
       updatedAt: new Date().toISOString(),
