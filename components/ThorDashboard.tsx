@@ -16,10 +16,10 @@ const insights: Array<{
   title: string;
   explanation: (view: ReturnType<typeof interpretThor>) => string;
 }> = [
-  { key: "lhl", icon: "ϟ", title: "Immediate electrical activity", explanation: (view) => view.activityExplanation },
-  { key: "di", icon: "↗", title: "Storm trend", explanation: (view) => view.trend },
-  { key: "ad", icon: "◎", title: "All-clear progress", explanation: (view) => view.allClearExplanation },
-  { key: "fcc", icon: "⌁", title: "Electrical discharges", explanation: (view) => view.dischargeExplanation },
+  { key: "lhl", icon: "ϟ", title: "Wider-area lightning potential", explanation: (view) => view.activityExplanation },
+  { key: "di", icon: "↗", title: "Nearby danger changing", explanation: (view) => view.trend },
+  { key: "ad", icon: "◎", title: "Quiet-time countdown", explanation: (view) => view.allClearExplanation },
+  { key: "fcc", icon: "⌁", title: "Discharges detected", explanation: (view) => view.dischargeExplanation },
 ];
 
 function ExternalLink({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
@@ -242,7 +242,7 @@ export function ThorDashboard() {
                     <span className="reading-chip"><b>{READING_DEFINITIONS[insight.key].label}</b> {displayData?.[insight.key] ?? "—"}</span>
                   </div>
                   <p>{insight.explanation(view)}</p>
-                  <p className="plain-reading"><strong>What this number means:</strong> {READING_DEFINITIONS[insight.key].plainEnglish}</p>
+                  <p className="plain-reading"><strong>Explain it like I’m brand new:</strong> {READING_DEFINITIONS[insight.key].plainEnglish}</p>
                 </div>
               </article>
             ))}
@@ -260,7 +260,7 @@ export function ThorDashboard() {
               </div>
             ))}
           </div>
-          <p className="verification-note">Definitions are deliberately conservative until each abbreviation is verified against current official documentation.</p>
+          <p className="verification-note">These definitions translate Thor Guard’s official Data Reference Guide and Interpretation Sheet. The official alert status always controls the safety decision.</p>
         </details>
 
         {(view.tone === "red" || view.tone === "yellow") && (
