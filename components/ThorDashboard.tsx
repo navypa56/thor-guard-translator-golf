@@ -62,7 +62,6 @@ export function ThorDashboard() {
   const [data, setData] = useState<ThorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const [sourceUrl, setSourceUrl] = useState<string>(DEFAULT_THOR_PAGE_URL);
   const [draftUrl, setDraftUrl] = useState<string>(DEFAULT_THOR_PAGE_URL);
   const [sourceReady, setSourceReady] = useState(false);
@@ -101,10 +100,8 @@ export function ThorDashboard() {
       setData(nextData);
       window.localStorage.setItem(cachedReadingKey(sourceUrl), JSON.stringify(nextData));
       setFailed(false);
-      setErrorMessage("");
-    } catch (error) {
+    } catch {
       setFailed(true);
-      setErrorMessage(error instanceof Error && error.name !== "AbortError" ? error.message : "The live source did not answer in time.");
     } finally {
       window.clearTimeout(timeout);
       setNextRefreshAt(Date.now() + REFRESH_SECONDS * 1000);
@@ -230,14 +227,10 @@ export function ThorDashboard() {
           <ExternalLink href={data?.sourcePageUrl ?? sourceUrl} className="verify-source-button">Verify on Official Thor Guard</ExternalLink>
         </div>
 
-        {failed && !trainingMode && (
-          <div className={`source-error ${data ? "retained-data" : ""}`}><p>{errorMessage} {data ? "The last successful update remains on screen; trying again in 5 seconds." : "Trying again in 5 seconds."}</p><ExternalLink href={sourceUrl} className="official-button">Open Selected Thor Guard Page</ExternalLink></div>
-        )}
-
         <section className={`section-block alert-surface alert-${view.tone}`}>
           <div className="section-heading">
             <div><p className="section-number">01 / LIVE TRANSLATION</p><h2>What’s happening right now</h2></div>
-            <div className="refresh-cluster"><span>{loading ? "Updating—last result stays visible" : `Updates in ${secondsToRefresh}s`}</span><button className="refresh-button" onClick={refresh} disabled={loading} aria-label="Refresh live data">↻</button></div>
+            <div className="refresh-cluster"><span>{loading ? "Updating now…" : `Updates in ${secondsToRefresh}s`}</span><button className="refresh-button" onClick={refresh} disabled={loading} aria-label="Refresh live data">↻</button></div>
           </div>
           <div className="insight-grid">
             {insights.map((insight) => (
