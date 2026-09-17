@@ -23,6 +23,13 @@ const weather = (probabilities: Array<number | null>, codes: Array<number | null
 });
 
 describe("remaining-play outlook", () => {
+  it("leads with the current All Clear when forecast data is unavailable", () => {
+    expect(playOutlook(null, true)).toMatchObject({
+      headline: "Play continues now under the current All Clear",
+      confidence: "LOW",
+    });
+  });
+
   it("reports favorable conditions when no disruptive period appears", () => {
     expect(playOutlook(weather(Array(12).fill(20))).level).toBe("FAVORABLE");
   });

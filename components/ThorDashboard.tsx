@@ -178,7 +178,7 @@ export function ThorDashboard() {
   const lastSyncAge = formatAge(data?.retrievedAt, now);
   const waiting30 = waitingEstimate(outlook?.precipitationChance30 ?? null, outlook?.thunderstormIn3Hours ?? false);
   const waiting60 = waitingEstimate(outlook?.precipitationChance60 ?? null, outlook?.thunderstormIn3Hours ?? false);
-  const playEstimate = playOutlook(outlook);
+  const playEstimate = playOutlook(outlook, view.tone === "green");
 
   return (
     <main>

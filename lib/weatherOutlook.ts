@@ -28,12 +28,12 @@ const thunderstormCode = (code: number | null) => code !== null && code >= 95;
 // These editable bands communicate when disruptive weather may become relevant;
 // they are not Thor Guard thresholds, lightning probabilities, or safety clearance.
 // The official Thor Guard alert always overrides this outlook.
-export function playOutlook(weather: WeatherOutlook | null): PlayOutlook {
+export function playOutlook(weather: WeatherOutlook | null, officialAllClear = false): PlayOutlook {
   if (!weather || weather.precipitationProbabilities.length < 4) {
     return {
       level: "UNCERTAIN",
-      headline: "Not enough weather data for a play estimate",
-      detail: "Keep watching the official Thor Guard status and radar.",
+      headline: officialAllClear ? "Play continues now under the current All Clear" : "Follow the current official course status",
+      detail: "The weather forecast is temporarily unavailable, so the app cannot estimate how long play may continue. Keep watching the official Thor Guard status and radar.",
       confidence: "LOW",
     };
   }
