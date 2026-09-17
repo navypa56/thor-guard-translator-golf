@@ -192,7 +192,7 @@ export function ThorDashboard() {
             <h1>Thor Guard Translator</h1>
           </div>
           <button className={`training-toggle ${trainingMode ? "active" : ""}`} type="button" onClick={() => setTrainingMode((enabled) => !enabled)} aria-pressed={trainingMode}>
-            {trainingMode ? "Exit training" : "Training mode"}
+            Training mode: <strong>{trainingMode ? "On" : "Off"}</strong>
           </button>
           <div className={`live-pill ${failed && !data ? "offline" : ""}`}>
             <span className="live-dot" />{trainingMode ? "SIMULATION" : loading && data ? "UPDATING" : loading ? "CONNECTING" : failed && data ? "LAST UPDATE" : failed ? "UNAVAILABLE" : "LIVE"}
