@@ -242,7 +242,7 @@ export function ThorDashboard() {
                     <span className="reading-chip"><b>{READING_DEFINITIONS[insight.key].label}</b> {displayData?.[insight.key] ?? "—"}</span>
                   </div>
                   <p>{insight.explanation(view)}</p>
-                  <p className="plain-reading"><strong>Explain it like I’m brand new:</strong> {READING_DEFINITIONS[insight.key].plainEnglish}</p>
+                  <p className="plain-reading">{READING_DEFINITIONS[insight.key].plainEnglish}</p>
                 </div>
               </article>
             ))}
