@@ -21,8 +21,8 @@ export interface ThorInterpretation {
 const unavailable: ThorInterpretation = {
   tone: "gray",
   eyebrow: "STATUS NOT VERIFIED",
-  headline: "LIVE DATA UNAVAILABLE",
-  summary: "Thor Guard data could not be verified. Check the official Thor Guard page before relying on this display.",
+  headline: "WAITING FOR VERIFIED DATA",
+  summary: "No verified reading has been saved on this device yet. The app will keep trying the official Thor Guard source.",
   activityExplanation: "Current electrical activity could not be verified.",
   trend: "Unknown — live status is unavailable.",
   allClearExplanation: "No All Clear has been verified.",

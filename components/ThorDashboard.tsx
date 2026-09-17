@@ -31,6 +31,33 @@ function formatTime(value?: string) {
   return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" }).format(new Date(value));
 }
 
+function formatAge(value?: string, now = Date.now()) {
+  if (!value) return "not yet synced";
+  const seconds = Math.max(0, Math.floor((now - new Date(value).getTime()) / 1000));
+  if (seconds < 60) return `${seconds} second${seconds === 1 ? "" : "s"} ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+}
+
+function cachedReadingKey(source: string) {
+  return `thor-last-verified:${source}`;
+}
+
+function readCachedReading(source: string): ThorData | null {
+  const key = cachedReadingKey(source);
+  const cached = window.localStorage.getItem(key);
+  if (!cached) return null;
+  try {
+    const restored = JSON.parse(cached) as ThorData;
+    return restored?.officialStatus && restored.officialStatus !== "Unknown" && restored.retrievedAt ? restored : null;
+  } catch {
+    window.localStorage.removeItem(key);
+    return null;
+  }
+}
+
 export function ThorDashboard() {
   const [data, setData] = useState<ThorData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +70,7 @@ export function ThorDashboard() {
   const [nextRefreshAt, setNextRefreshAt] = useState(() => Date.now() + REFRESH_SECONDS * 1000);
   const [outlook, setOutlook] = useState<WeatherOutlook | null>(null);
   const [trainingMode, setTrainingMode] = useState(false);
+  const [now, setNow] = useState(Date.now());
   const refreshInProgress = useRef(false);
 
   useEffect(() => {
@@ -50,6 +78,7 @@ export function ThorDashboard() {
       const saved = window.localStorage.getItem("thor-course-url") ?? DEFAULT_THOR_PAGE_URL;
       setSourceUrl(saved);
       setDraftUrl(saved);
+      setData(readCachedReading(saved));
       setSourceReady(true);
     }, 0);
     return () => window.clearTimeout(initialize);
@@ -67,7 +96,10 @@ export function ThorDashboard() {
         const body = await response.json().catch(() => null);
         throw new Error(body?.error ?? "Live data unavailable");
       }
-      setData(await response.json());
+      const nextData = await response.json() as ThorData;
+      if (interpretThor(nextData).tone === "gray") throw new Error("The newest response was not verified.");
+      setData(nextData);
+      window.localStorage.setItem(cachedReadingKey(sourceUrl), JSON.stringify(nextData));
       setFailed(false);
       setErrorMessage("");
     } catch (error) {
@@ -93,6 +125,7 @@ export function ThorDashboard() {
 
   useEffect(() => {
     const timer = window.setInterval(() => {
+      setNow(Date.now());
       setSecondsToRefresh(Math.max(0, Math.ceil((nextRefreshAt - Date.now()) / 1000)));
     }, 250);
     return () => window.clearInterval(timer);
@@ -115,11 +148,13 @@ export function ThorDashboard() {
     const value = draftUrl.trim();
     if (!value) return;
     window.localStorage.setItem("thor-course-url", value);
+    setData(readCachedReading(value));
     setSourceUrl(value);
   }
 
   function restoreDefault() {
     window.localStorage.removeItem("thor-course-url");
+    setData(readCachedReading(DEFAULT_THOR_PAGE_URL));
     setDraftUrl(DEFAULT_THOR_PAGE_URL);
     setSourceUrl(DEFAULT_THOR_PAGE_URL);
   }
@@ -143,6 +178,7 @@ export function ThorDashboard() {
   };
   const displayData = trainingMode ? trainingData : data;
   const view = displayData ? interpretThor(displayData) : unavailableInterpretation();
+  const lastSyncAge = formatAge(data?.retrievedAt, now);
   const waiting30 = waitingEstimate(outlook?.precipitationChance30 ?? null, outlook?.thunderstormIn3Hours ?? false);
   const waiting60 = waitingEstimate(outlook?.precipitationChance60 ?? null, outlook?.thunderstormIn3Hours ?? false);
 
@@ -181,12 +217,18 @@ export function ThorDashboard() {
           <p className="status-eyebrow"><span className="status-icon">{view.tone === "red" ? "!" : view.tone === "green" ? "✓" : view.tone === "yellow" ? "!" : "—"}</span>{view.eyebrow}</p>
           <h2>{view.headline}</h2>
           {trainingMode && <div className="training-banner"><strong>TRAINING MODE</strong> Simulated readings—not current conditions.</div>}
+          {!trainingMode && data && (loading || failed) && <div className="stored-banner"><strong>LAST SYNC: {lastSyncAge.toUpperCase()}</strong> Keeping this verified status visible while the next update is pending.</div>}
           <p className="status-summary">{view.summary}</p>
           <div className="status-meta">
             <span>{displayData?.location ?? "Selected course"}</span>
             <span>{trainingMode ? "Simulated" : "Official"} status: <strong>{displayData?.officialStatus ?? "Not verified"}</strong></span>
           </div>
         </section>
+
+        <div className="source-verification">
+          <div><strong>Confirm the official status</strong><span>Open the Thor Guard source used by this app.</span></div>
+          <ExternalLink href={data?.sourcePageUrl ?? sourceUrl} className="verify-source-button">Verify on Official Thor Guard</ExternalLink>
+        </div>
 
         {failed && !trainingMode && (
           <div className={`source-error ${data ? "retained-data" : ""}`}><p>{errorMessage} {data ? "The last successful update remains on screen; trying again in 5 seconds." : "Trying again in 5 seconds."}</p><ExternalLink href={sourceUrl} className="official-button">Open Selected Thor Guard Page</ExternalLink></div>
@@ -253,7 +295,7 @@ export function ThorDashboard() {
         )}
 
         <div className="update-row">
-          <span><span className="pulse" />{trainingMode ? "Training scenario" : "Last successful update"}: <strong>{trainingMode ? "Simulated" : formatTime(data?.retrievedAt)}</strong></span>
+          <span><span className="pulse" />{trainingMode ? "Training scenario" : "Last successful sync"}: <strong>{trainingMode ? "Simulated" : data ? `${formatTime(data.retrievedAt)} (${lastSyncAge})` : "Waiting for first verified reading"}</strong></span>
           <span>Source reading: <strong>{trainingMode ? "Simulated—not live" : data?.sourceUpdatedAt ?? "Not available"}</strong></span>
         </div>
 
