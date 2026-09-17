@@ -17,6 +17,7 @@ Prescott Lakes is the default course. Users can also enter another course’s pu
 - Shows clear visual states for All Clear, caution, and Red Alert.
 - Includes a training mode with simulated Red Alert data.
 - Displays a course-centered weather radar with a color legend.
+- Shows a free, explainable **remaining-play outlook** while play is allowed, such as “likely 2–3 more hours” or “possible interruption in 30–60 minutes.”
 - Provides a weather-based waiting estimate during caution or Red Alert while clearly separating that estimate from Thor Guard’s official status.
 - Works on desktop, iPhone, and Android-sized screens.
 - Links directly to the official Thor Guard source so users can verify the current alert.
@@ -59,7 +60,7 @@ npm run build
 
 - `app/api/thor/route.ts` fetches a selected course’s ThorMobile data server-side with caching disabled.
 - `app/api/radar/route.ts` supports the radar display.
-- `app/api/outlook/route.ts` provides weather context for the waiting estimate.
+- `app/api/outlook/route.ts` provides free 15-minute weather-model data for the remaining-play and waiting estimates.
 - `lib/thorSource.ts` validates a public ThorMobile course URL and discovers its data feed.
 - `lib/thorParser.ts` decodes and normalizes the live fields.
 - `lib/thorDefinitions.ts` is the single editable home for definitions and source notes.
@@ -75,4 +76,4 @@ Use the **Email the author** button in the app, or email [savelaven@gmail.com](m
 
 ## Version
 
-Current release: **v1.0.0**
+Current release: **v1.0.0** · Latest source includes the remaining-play weather outlook.

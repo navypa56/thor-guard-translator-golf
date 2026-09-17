@@ -15,10 +15,15 @@
     h1 { max-width:620px; margin:0; font-size:clamp(40px,8vw,72px); line-height:.94; letter-spacing:-.06em; }
     .intro { max-width:610px; margin:24px 0; color:var(--muted); font-size:18px; line-height:1.55; }
     .actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+    .features { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:28px 0 0; }
+    .feature { padding:15px; border:1px solid #d7ded8; border-radius:14px; }
+    .feature strong { display:block; margin-bottom:5px; font-size:14px; }
+    .feature span { color:var(--muted); font-size:12px; line-height:1.45; }
     a { min-height:48px; display:inline-flex; align-items:center; justify-content:center; padding:12px 18px; border:1px solid var(--ink); border-radius:13px; color:var(--ink); font-weight:800; text-decoration:none; }
     a.primary { background:var(--ink); color:white; }
     .notice { margin-top:30px; padding-top:20px; border-top:1px solid #d7ded8; color:var(--muted); font-size:13px; line-height:1.5; }
-    @media (prefers-color-scheme:dark) { :root{--ink:#edf4ef;--paper:#101513;--muted:#a8b2ac} main{background:#171e1a;border-color:#303933}.mark{background:#edf4ef;color:#183020}a.primary{background:#edf4ef;color:#101513}.notice{border-color:#303933} }
+    @media (max-width:620px) { .features{grid-template-columns:1fr} }
+    @media (prefers-color-scheme:dark) { :root{--ink:#edf4ef;--paper:#101513;--muted:#a8b2ac} main{background:#171e1a;border-color:#303933}.mark{background:#edf4ef;color:#183020}a.primary{background:#edf4ef;color:#101513}.notice,.feature{border-color:#303933} }
   </style>
 </head>
 <body>
@@ -27,6 +32,11 @@
     <p class="eyebrow">Live course conditions</p>
     <h1>Thor Guard Translator for Golf</h1>
     <p class="intro">Clear, safety-first explanations of a golf course’s live ThorMobile alert status and readings. Prescott Lakes is included by default, and other public ThorMobile course pages can be selected.</p>
+    <div class="features" aria-label="App features">
+      <div class="feature"><strong>Live Thor status</strong><span>Readable alerts and raw Thor Guard values with the official status always in control.</span></div>
+      <div class="feature"><strong>Remaining-play outlook</strong><span>A free forecast of whether play may continue for hours or face an interruption soon.</span></div>
+      <div class="feature"><strong>Course radar</strong><span>A mobile-friendly weather map, color guide, and direct link to the official Thor page.</span></div>
+    </div>
     <div class="actions">
       <a class="primary" href="https://thor-guard-translator-golf.savelaven.chatgpt.site/">Open the live app ↗</a>
       <a href="https://github.com/navypa56/thor-guard-translator-golf">View the source ↗</a>
